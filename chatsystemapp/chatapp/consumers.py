@@ -77,26 +77,33 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         if event_type == 'chat_message':
             message_content = text_data_json.get('message')
-            user_id = text_data_json.get('user')
+            temp_id = text_data_json.get('temp_id', None)
 
             try:
-                user = await self.get_user(user_id)
-                
+                # use the authenticated user associated with this connection
+                user = self.scope.get('user')
+
                 conversation = await self.get_conversation(self.conversation_id)
                 from .serializers import UserListSerializer
                 user_data = UserListSerializer(user).data
 
-                #say message to the group/database
+                # save message to the database
                 message = await self.save_message(conversation, user, message_content)
-                #broadcast the message to the group
+
+                # broadcast the message to the group (include temp_id if provided)
+                payload = {
+                    'type': 'chat_message',
+                    'id': message.id,
+                    'message': message.content,
+                    'user': user_data,
+                    'timestamp': message.timestamp.isoformat(),
+                }
+                if temp_id is not None:
+                    payload['temp_id'] = temp_id
+
                 await self.channel_layer.group_send(
                     self.room_group_name,
-                    {
-                        'type': 'chat_message',
-                        'message': message.content,
-                        'user': user_data,
-                        'timestamp': message.timestamp.isoformat(),
-                    }
+                    payload
                 )
             except Exception as e:
                 print(f"Error saving message: {e}")
@@ -136,12 +143,22 @@ class ChatConsumer(AsyncWebsocketConsumer):
         message = event['message']
         user = event['user']
         timestamp = event['timestamp']
-        await self.send(text_data=json.dumps({
+        message_id = event.get('id')
+        temp_id = event.get('temp_id')
+
+        payload = {
             'type': 'chat_message',
             'message': message,
             'user': user,
             'timestamp': timestamp,
-        }))
+        }
+
+        if message_id is not None:
+            payload['id'] = message_id
+        if temp_id is not None:
+            payload['temp_id'] = temp_id
+
+        await self.send(text_data=json.dumps(payload))
     
     async def typing(self, event):
         user = event['user']
@@ -186,3 +203,50 @@ class ChatConsumer(AsyncWebsocketConsumer):
             sender=user,
             content=content
         )
+
+
+class NotificationsConsumer(AsyncWebsocketConsumer):
+    """Simple notifications consumer that joins a per-user group named `user_{id}`.
+    Used to push feedback updates (admin responses) to the specific user in real time.
+    """
+
+    async def connect(self):
+        query_string = self.scope['query_string'].decode('utf-8')
+        params = parse_qs(query_string)
+        token = params.get('token', [None])[0]
+
+        if token:
+            try:
+                decoded_data = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+                self.user = await self.get_user(decoded_data['user_id'])
+                self.scope['user'] = self.user
+            except Exception:
+                await self.close(code=4001)
+                return
+        else:
+            await self.close(code=4002)
+            return
+
+        self.group_name = f'user_{self.user.id}'
+
+        await self.channel_layer.group_add(self.group_name, self.channel_name)
+        await self.accept()
+
+    async def disconnect(self, close_code):
+        try:
+            await self.channel_layer.group_discard(self.group_name, self.channel_name)
+        except Exception:
+            pass
+
+    async def feedback_update(self, event):
+        # event will contain payload keys for the feedback
+        await self.send(text_data=json.dumps({
+            'type': 'feedback_update',
+            'feedback': event.get('feedback')
+        }))
+
+    @sync_to_async
+    def get_user(self, user_id):
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        return User.objects.get(id=user_id)

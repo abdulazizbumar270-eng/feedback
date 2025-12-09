@@ -10,6 +10,9 @@ import { useAuthentication } from './auth';
 import AuthPage from './pages/AuthPage';
 import Home from './pages/Home';
 import ProtectedRoute from './components/AuthAccess';
+import FeedbackPage from './pages/FeedbackPage';
+import FeedbackAdmin from './pages/FeedbackAdmin';
+import FeedbackInbox from './pages/FeedbackInbox';
 
 const App = () => {
   const {isAuthenticated} = useAuthentication()
@@ -32,6 +35,21 @@ const App = () => {
         </ProtectedRoute>
         } />
         <Route path="/chat/:conversationId" element={<Conversation />} />
+        <Route path="/feedback" element={
+          <ProtectedRoute>
+            <FeedbackPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/feedback/inbox" element={
+          <ProtectedRoute>
+            <FeedbackInbox />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/feedback" element={
+          <ProtectedRoute>
+            <FeedbackAdmin />
+          </ProtectedRoute>
+        } />
       </Routes>
     </Router>
   );

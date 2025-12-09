@@ -1,0 +1,20 @@
+/* Simple styles for feedback inbox */
+.feedback-inbox-page {
+  padding: 24px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+.feedback-list { margin-top: 16px; }
+.feedback-row { border: 1px solid #e6e6e6; border-radius: 6px; margin-bottom: 12px; overflow: hidden; }
+.feedback-summary { display:flex; justify-content:space-between; align-items:center; padding:12px; cursor:pointer; background:#fff; }
+.feedback-summary .left { display:flex; gap:12px; align-items:center }
+.feedback-summary .type { font-weight:600; text-transform:capitalize; color:#333 }
+.feedback-summary .subject { color:#666 }
+.feedback-summary .right { text-align:right }
+.feedback-body { padding:12px; background:#fafafa }
+.feedback-body .message p, .feedback-body .admin-response p { margin:8px 0 }
+.empty { color:#666; padding:12px }
+.error { color:crimson }
+.status { font-size:12px; padding:4px 8px; border-radius:12px; background:#eef; color:#114 }
+.feedback-row.open .status { background:#fffae6 }
+.feedback-row.closed .status { background:#e6ffef }

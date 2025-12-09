@@ -23,4 +23,31 @@ api.interceptors.request.use(
   
 );
 
+// Feedback API helpers
+export const submitFeedback = async (payload) => {
+  const res = await api.post('/feedback/', payload);
+  return res.data;
+}
+
+export const listFeedbacks = async () => {
+  const res = await api.get('/feedback/');
+  return res.data;
+}
+
+export const getFeedback = async (id) => {
+  const res = await api.get(`/feedback/${id}/`);
+  return res.data;
+}
+
+export const updateFeedback = async (id, payload) => {
+  // Use PATCH for partial updates (admin may only send admin_response/status)
+  const res = await api.patch(`/feedback/${id}/`, payload);
+  return res.data;
+}
+
+export const getCurrentUser = async () => {
+  const res = await api.get('/auth/me/');
+  return res.data;
+}
+
 export default api;

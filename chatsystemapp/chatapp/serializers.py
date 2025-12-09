@@ -18,7 +18,13 @@ class UserSerializer(serializers.ModelSerializer):
 class UserListSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'username')
+        fields = ('id', 'username', 'is_staff', 'is_superuser')
+
+
+class CurrentUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'email', 'is_staff', 'is_superuser')
 
 
 class ConversationSerializer(serializers.ModelSerializer):
@@ -46,3 +52,20 @@ class CreateMessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Message
         fields = ('conversation', 'content')
+
+
+class FeedbackSerializer(serializers.ModelSerializer):
+    user = UserListSerializer(read_only=True)
+
+    class Meta:
+        model = __import__('chatapp.models', fromlist=['Feedback']).Feedback
+        fields = ('id', 'user', 'name', 'email', 'subject', 'message', 'type', 'status', 'admin_response', 'created_at', 'updated_at')
+        # Allow admin to update `status` and `admin_response` via the update endpoint.
+        # View logic enforces that non-staff users cannot change these fields.
+        read_only_fields = ('created_at', 'updated_at')
+
+
+class CreateFeedbackSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = __import__('chatapp.models', fromlist=['Feedback']).Feedback
+        fields = ('name', 'email', 'subject', 'message', 'type')

@@ -1,19 +1,37 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../styles/Navbar.css";
 import { useAuthentication } from "../auth";
 import { Link } from "react-router-dom";
+import { getCurrentUser } from '../api'
 
 const Navbar = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const { isAuthenticated, logout } = useAuthentication();
   const handleLogout = () => {
     logout();
-    setMenuOpen(false); // Close menu after logout
+    setSidebarOpen(false); // Close menu after logout
   };
 
   const toggleSidebar = () => {
     setSidebarOpen(!isSidebarOpen);
   };
+
+  const [isAdmin, setIsAdmin] = useState(false)
+
+  useEffect(() => {
+    let mounted = true
+    const fetchMe = async () => {
+      if (!isAuthenticated) return setIsAdmin(false)
+      try {
+        const me = await getCurrentUser()
+        if (mounted) setIsAdmin(Boolean(me.is_staff || me.is_superuser))
+      } catch (err) {
+        if (mounted) setIsAdmin(false)
+      }
+    }
+    fetchMe()
+    return () => { mounted = false }
+  }, [isAuthenticated])
   
 
 
@@ -43,6 +61,19 @@ const Navbar = () => {
                       Chats
                     </Link>
                   </li>
+                  <li>
+                    <Link to="/feedback" className="button-link">
+                      Feedback
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/feedback/inbox" className="button-link">My Inbox</Link>
+                  </li>
+                  {isAdmin && (
+                    <li>
+                      <Link to="/admin/feedback" className="button-link">Admin Inbox</Link>
+                    </li>
+                  )}
                 </>
               ) : (
                 <>
