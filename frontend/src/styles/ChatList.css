@@ -113,3 +113,12 @@
     text-align: center;
     color: #777;
   }
+
+  .delete-conversation-btn {
+    margin-left: 8px;
+    background-color: transparent;
+    border: none;
+    color: red;
+    cursor: pointer;
+    font-size: 0.8rem;
+  }

@@ -143,6 +143,29 @@ class MessageRetrieveDestroyView(generics.RetrieveDestroyAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+class ConversationRetrieveDestroyView(generics.RetrieveDestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = ConversationSerializer
+
+    def get_queryset(self):
+        return Conversation.objects.all()
+
+    def get_object(self):
+        # For retrieval ensure the requester is a participant; for delete we'll check admin rights
+        obj = get_object_or_404(Conversation, id=self.kwargs.get('pk'))
+        if self.request.method == 'GET':
+            if self.request.user not in obj.participants.all():
+                raise PermissionDenied('You are not a participant of this conversation')
+        return obj
+
+    def perform_destroy(self, instance):
+        # Only staff/superuser can delete a conversation
+        if not (self.request.user.is_staff or self.request.user.is_superuser):
+            raise PermissionDenied('Only admins can delete conversations')
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
 class FeedbackListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
@@ -179,6 +202,12 @@ class FeedbackRetrieveUpdateView(generics.RetrieveUpdateAPIView):
         if self.request.user.is_staff or self.request.user.is_superuser:
             return Feedback.objects.all()
         return Feedback.objects.filter(user=self.request.user)
+
+    def get_serializer_class(self):
+        """Use UpdateFeedbackSerializer for PATCH to allow partial updates."""
+        if self.request.method == 'PATCH':
+            return UpdateFeedbackSerializer
+        return FeedbackSerializer
 
     def perform_update(self, serializer):
         feedback = self.get_object()

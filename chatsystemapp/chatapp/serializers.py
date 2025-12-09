@@ -65,6 +65,23 @@ class FeedbackSerializer(serializers.ModelSerializer):
         read_only_fields = ('created_at', 'updated_at')
 
 
+class UpdateFeedbackSerializer(serializers.ModelSerializer):
+    """Serializer for PATCH updates; all fields optional to allow partial admin updates."""
+    user = UserListSerializer(read_only=True)
+    name = serializers.CharField(required=False, allow_blank=True)
+    email = serializers.EmailField(required=False, allow_blank=True)
+    subject = serializers.CharField(required=False, allow_blank=True)
+    message = serializers.CharField(required=False, allow_blank=True)
+    type = serializers.CharField(required=False, allow_blank=True)
+    status = serializers.CharField(required=False, allow_blank=True)
+    admin_response = serializers.CharField(required=False, allow_blank=True)
+
+    class Meta:
+        model = __import__('chatapp.models', fromlist=['Feedback']).Feedback
+        fields = ('id', 'user', 'name', 'email', 'subject', 'message', 'type', 'status', 'admin_response', 'created_at', 'updated_at')
+        read_only_fields = ('created_at', 'updated_at', 'user', 'id')
+
+
 class CreateFeedbackSerializer(serializers.ModelSerializer):
     class Meta:
         model = __import__('chatapp.models', fromlist=['Feedback']).Feedback

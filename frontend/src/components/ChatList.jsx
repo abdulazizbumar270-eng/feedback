@@ -98,14 +98,13 @@ import { ACCESS_TOKEN } from "../token";
       return Number(adminUser.id) !== Number(currentUserId) ? [adminUser] : [];
     })();
 
-    console.log('ChatList: adminUser, isAdmin, visibleUsers', adminUser, isAdmin, visibleUsers);
 
     return (
       <div className="chat-list-container">
         <div className={`chat-sidebar ${activeConversation ? "slide-out" : "slide-in"}`}>
           <header className="chat-header">
-            <h1>Welcome to ChitChat</h1>
-            <p>Connect with your friends instantly!</p>
+            <h1>Welcome to Office of the Secretary General</h1>
+            <p>Feel free to share your thoughts with the office</p>
           </header>
           <div className="user-selector">
             <select onChange={(e) => setSelectedUser(Number(e.target.value))} value={selectedUser || ""}>
@@ -135,6 +134,33 @@ import { ACCESS_TOKEN } from "../token";
                     .map((user) => user.username)
                     .join(", ")}
                 </p>
+                {isAdmin && (
+                  <button
+                    className="delete-conversation-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const ok = window.confirm('Delete this conversation? This cannot be undone.');
+                      if (!ok) return;
+                      (async () => {
+                        try {
+                          const res = await api.delete(`/conversations/${conversation.id}/`);
+                          // remove from list if successful
+                          if (res.status === 204 || res.status === 200) {
+                            setConversations((prev) => prev.filter((c) => c.id !== conversation.id));
+                            if (activeConversation && activeConversation.id === conversation.id) {
+                              setActiveConversation(null);
+                            }
+                          }
+                        } catch (err) {
+                          console.error('Failed to delete conversation', err);
+                          setErrorMessage(err.response?.data?.detail || 'Failed to delete conversation');
+                        }
+                      })();
+                    }}
+                  >
+                    Delete
+                  </button>
+                )}
               </div>
             ))}
           </div>
@@ -147,6 +173,7 @@ import { ACCESS_TOKEN } from "../token";
               currentUserId={currentUserId}
               onBack={handleBackToChatList}
             />
+          
           ) : (
             <p className="no-conversation-message">Select a conversation to view.</p>
           )}
