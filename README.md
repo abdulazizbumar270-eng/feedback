@@ -1,2 +1,0 @@
-# plantdisease
-crop disease detection
