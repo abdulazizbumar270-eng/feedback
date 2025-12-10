@@ -1,9 +1,12 @@
-<<<<<<< HEAD
+/* Home.css */
+body {
+    font-family: "Arial", sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
 
   .home-container {
-=======
-    .home-container {
->>>>>>> 72cf743ee0a174d7493c581ed1ad945c12175df5
     height: 100vh;
     display: flex;
     flex-direction: column;
