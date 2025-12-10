@@ -100,7 +100,7 @@ SIMPLE_JWT = {
 }
 
 # Cors Headers
-ALLOWED_HOSTS = ["*", "localhost", "127.0.0.1"]
+ALLOWED_HOSTS = ["https://secgenoffice.onrender.com/", "localhost", "127.0.0.1"]
 
 CORS_ALLOW_ALL_ORIGINS = True
 
