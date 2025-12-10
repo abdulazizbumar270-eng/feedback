@@ -26,7 +26,8 @@ SECRET_KEY = 'django-insecure-96nanr(g!qv9n^lt8)vabh6k!4sh9y72amh*a1jx1zxdy^l$rw
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['secgenoffice.onrender.com']
+ALLOWED_HOSTS = ["secgenoffice.onrender.com/", "127.0.0.1", "localhost"]
+
 
 
 # Application definition
@@ -100,7 +101,6 @@ SIMPLE_JWT = {
 }
 
 # Cors Headers
-ALLOWED_HOSTS = ["https://secgenoffice.onrender.com/", "localhost", "127.0.0.1"]
 
 CORS_ALLOW_ALL_ORIGINS = True
 
