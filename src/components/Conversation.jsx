@@ -78,7 +78,7 @@ const Conversation = ({ conversationId: propConversationId, currentUserId: propC
     let host = import.meta.env.VITE_API_WS_HOST;
     if (!host) {
       const hostname = window.location.hostname || 'localhost'
-      host = `${hostname}:8000`
+      host = `${hostname}`
     }
     const wsUrl = `${protocol}://${host}/ws/chat/${conversationId}/?token=${token}`
     console.log('Attempting WebSocket connection to', wsUrl)
